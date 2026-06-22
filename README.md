@@ -35,15 +35,35 @@ driver is recent enough (driver `>= 515`, which is satisfied by any CUDA 12.x /
 NGC 23.09 host, driver `535+`) — the host CUDA toolkit version does not need to match.
 
 ```bash
-# inside the NGC 23.09 container (or any CUDA 12.x host), use a fresh venv/conda env
-python -m venv dewarp && source dewarp/bin/activate
+# inside the NGC 23.09 container (or any CUDA 12.x host)
+deactivate 2>/dev/null          # leave any active env
+unset PYTHONPATH                # avoid inheriting the container's site-packages
+python3.10 -m venv dewarp       # PLAIN venv (do NOT use --system-site-packages for Option A)
+source dewarp/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-This installs `torch 1.13.0+cu117` (which overrides the container's torch 2.1)
-and `mmcv-full 1.7.1` from the OpenMMLab cu117/torch1.13.0 wheel index. No source
-compilation or GPU-toolkit match is required.
+> **Important — use an *isolated* venv for Option A.** This installs
+> `torch 1.13.0+cu117`, which must **replace** the container's torch 2.1. If you
+> install into the container directly (or into a `--system-site-packages` venv),
+> pip swaps torch's Python files but the container's torch 2.x compiled extension
+> (`torch._C`) can still get loaded, giving:
+> `TypeError: cannot set __module__ attribute of immutable type 'torch._C.DisableTorchFunctionSubclass'`
+> (`DisableTorchFunctionSubclass` is a torch 2.x symbol that does not exist in
+> torch 1.13 — its presence proves the env is mixed). A plain venv has no torch to
+> collide with, so it avoids this.
+
+Verify you are on the clean torch before running anything else:
+
+```bash
+python -c "import torch; print(torch.__version__, torch.__file__)"
+# expected: 1.13.0+cu117  /.../dewarp/lib/python3.10/site-packages/torch/__init__.py
+```
+
+The `torch==1.13.0+cu117` wheel and `mmcv-full 1.7.1` both come from the index
+URLs declared in `requirements.txt`; no source compilation or GPU-toolkit match
+is required.
 
 ### Option B — Use the container's native PyTorch 2.1 / CUDA 12.2
 
