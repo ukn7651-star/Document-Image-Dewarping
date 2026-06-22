@@ -1,3 +1,10 @@
+# Reference environment from the paper: PyTorch 1.13.0 + CUDA 11.7, Python 3.10.
+# The torch "+cu117" build and the mmcv-full CUDA wheel are not on plain PyPI,
+# so the extra index / find-links below are required for `pip install -r requirements.txt`.
+# See the README "Environment & Installation" section for other setups (e.g. CUDA 12.x / torch 2.x).
+--extra-index-url https://download.pytorch.org/whl/cu117
+-f https://download.openmmlab.com/mmcv/dist/cu117/torch1.13.0/index.html
+
 torch==1.13.0+cu117
 opencv-python==4.8.1.78
 numpy==1.26.0
