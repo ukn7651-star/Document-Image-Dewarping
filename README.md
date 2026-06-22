@@ -53,6 +53,13 @@ pip install -r requirements.txt
 > (`DisableTorchFunctionSubclass` is a torch 2.x symbol that does not exist in
 > torch 1.13 — its presence proves the env is mixed). A plain venv has no torch to
 > collide with, so it avoids this.
+>
+> **Being inside an activated venv is not enough.** NGC containers usually set the
+> `PYTHONPATH` environment variable to their system `dist-packages`, and those
+> entries are added to `sys.path` *ahead of* your venv even when it is activated —
+> so `import torch` can still resolve to the container's torch 2.1. Always
+> `unset PYTHONPATH` (as above) and verify with the `torch.__file__` check below
+> that torch resolves to a path *inside your venv*.
 
 Verify you are on the clean torch before running anything else:
 
