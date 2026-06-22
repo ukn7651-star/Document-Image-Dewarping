@@ -91,6 +91,41 @@ whereas NGC 23.09 ships a custom `torch 2.1.0a0` / CUDA 12.2 build, so its
 compiled CUDA ops can occasionally hit an ABI mismatch. If you see errors when
 importing `mmcv` ops, fall back to Option A, which avoids that risk entirely.
 
+### If the index URLs are blocked (manual `.whl` install)
+
+`pip install -r requirements.txt` needs to reach `download.pytorch.org` and
+`download.openmmlab.com`. If those hosts are blocked on your server, download the
+exact wheels (Python 3.10 / Linux) and install them locally instead. The `.whl`
+files still pull their *dependencies* from regular PyPI, so this only works if
+plain PyPI is reachable (otherwise pre-download everything elsewhere and copy it
+over).
+
+Option A wheels (torch 1.13 + mmcv-full 1.7.1):
+
+```bash
+wget -O torch-1.13.0+cu117-cp310-cp310-linux_x86_64.whl \
+  "https://download.pytorch.org/whl/cu117/torch-1.13.0%2Bcu117-cp310-cp310-linux_x86_64.whl"
+wget "https://download.openmmlab.com/mmcv/dist/cu117/torch1.13.0/mmcv_full-1.7.1-cp310-cp310-manylinux1_x86_64.whl"
+pip install ./torch-1.13.0+cu117-cp310-cp310-linux_x86_64.whl
+pip install ./mmcv_full-1.7.1-cp310-cp310-manylinux1_x86_64.whl
+pip install numpy==1.26.0 opencv-python==4.8.1.78 Pillow==9.4.0
+```
+
+Option B wheel (keep torch 2.1, add mmcv-full 1.7.2):
+
+```bash
+wget "https://download.openmmlab.com/mmcv/dist/cu121/torch2.1.0/mmcv_full-1.7.2-cp310-cp310-manylinux1_x86_64.whl"
+pip install ./mmcv_full-1.7.2-cp310-cp310-manylinux1_x86_64.whl
+pip install numpy==1.26.0 opencv-python==4.8.1.78 Pillow==9.4.0
+```
+
+> **Note on `venv` creation:** on Ubuntu-based images (including the NGC
+> container) `python3 -m venv` can fail with `ensurepip is not available`. Either
+> install the venv package (`apt-get install -y python3.10-venv`), use the
+> standalone `virtualenv` tool (`pip install virtualenv && virtualenv my_env`),
+> or create it with `--without-pip` and bootstrap pip via
+> `curl -sS https://bootstrap.pypa.io/get-pip.py | python`.
+
 ## Inference
 Please download the pre-trained model from 
 [Google Drive](https://drive.google.com/drive/folders/1UWL7wWSCcyhHuWLSKQRI9g2_cp0M0aD-?usp=sharing) 
